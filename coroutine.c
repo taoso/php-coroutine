@@ -27,26 +27,18 @@
 #include "ext/standard/info.h"
 #include "php_coroutine.h"
 
-/* If you declare any globals in php_coroutine.h uncomment this:
 ZEND_DECLARE_MODULE_GLOBALS(coroutine)
-*/
 
 /* True global resources - no need for thread safety here */
 static int le_coroutine;
 
 /* {{{ PHP_INI
  */
-/* Remove comments and fill if you need to have entries in php.ini
 PHP_INI_BEGIN()
     STD_PHP_INI_ENTRY("coroutine.global_value",      "42", PHP_INI_ALL, OnUpdateLong, global_value, zend_coroutine_globals, coroutine_globals)
     STD_PHP_INI_ENTRY("coroutine.global_string", "foobar", PHP_INI_ALL, OnUpdateString, global_string, zend_coroutine_globals, coroutine_globals)
 PHP_INI_END()
-*/
 /* }}} */
-
-/* Remove the following function when you have successfully modified config.m4
-   so that your module can be compiled into PHP, it exists only for testing
-   purposes. */
 
 /* Every user-visible function in PHP should document itself in the source */
 /* {{{ proto string confirm_coroutine_compiled(string arg)
@@ -66,31 +58,22 @@ PHP_FUNCTION(confirm_coroutine_compiled)
 	RETURN_STR(strg);
 }
 /* }}} */
-/* The previous line is meant for vim and emacs, so it can correctly fold and
-   unfold functions in source code. See the corresponding marks just before
-   function definition, where the functions purpose is also documented. Please
-   follow this convention for the convenience of others editing your code.
-*/
-
 
 /* {{{ php_coroutine_init_globals
  */
-/* Uncomment this function if you have INI entries
 static void php_coroutine_init_globals(zend_coroutine_globals *coroutine_globals)
 {
 	coroutine_globals->global_value = 0;
 	coroutine_globals->global_string = NULL;
 }
-*/
 /* }}} */
 
 /* {{{ PHP_MINIT_FUNCTION
  */
 PHP_MINIT_FUNCTION(coroutine)
 {
-	/* If you have INI entries, uncomment these lines
 	REGISTER_INI_ENTRIES();
-	*/
+
 	return SUCCESS;
 }
 /* }}} */
@@ -99,30 +82,8 @@ PHP_MINIT_FUNCTION(coroutine)
  */
 PHP_MSHUTDOWN_FUNCTION(coroutine)
 {
-	/* uncomment this line if you have INI entries
 	UNREGISTER_INI_ENTRIES();
-	*/
-	return SUCCESS;
-}
-/* }}} */
 
-/* Remove if there's nothing to do at request start */
-/* {{{ PHP_RINIT_FUNCTION
- */
-PHP_RINIT_FUNCTION(coroutine)
-{
-#if defined(COMPILE_DL_COROUTINE) && defined(ZTS)
-	ZEND_TSRMLS_CACHE_UPDATE();
-#endif
-	return SUCCESS;
-}
-/* }}} */
-
-/* Remove if there's nothing to do at request end */
-/* {{{ PHP_RSHUTDOWN_FUNCTION
- */
-PHP_RSHUTDOWN_FUNCTION(coroutine)
-{
 	return SUCCESS;
 }
 /* }}} */
@@ -135,9 +96,7 @@ PHP_MINFO_FUNCTION(coroutine)
 	php_info_print_table_header(2, "coroutine support", "enabled");
 	php_info_print_table_end();
 
-	/* Remove comments if you have entries in php.ini
 	DISPLAY_INI_ENTRIES();
-	*/
 }
 /* }}} */
 
@@ -159,8 +118,8 @@ zend_module_entry coroutine_module_entry = {
 	coroutine_functions,
 	PHP_MINIT(coroutine),
 	PHP_MSHUTDOWN(coroutine),
-	PHP_RINIT(coroutine),		/* Replace with NULL if there's nothing to do at request start */
-	PHP_RSHUTDOWN(coroutine),	/* Replace with NULL if there's nothing to do at request end */
+	NULL,
+	NULL,
 	PHP_MINFO(coroutine),
 	PHP_COROUTINE_VERSION,
 	STANDARD_MODULE_PROPERTIES

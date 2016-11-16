@@ -38,20 +38,11 @@ extern zend_module_entry coroutine_module_entry;
 #include "TSRM.h"
 #endif
 
-/*
-  	Declare any global variables you may need between the BEGIN
-	and END macros here:
-
 ZEND_BEGIN_MODULE_GLOBALS(coroutine)
 	zend_long  global_value;
 	char *global_string;
 ZEND_END_MODULE_GLOBALS(coroutine)
-*/
 
-/* Always refer to the globals in your function as COROUTINE_G(variable).
-   You are encouraged to rename these macros something shorter, see
-   examples in any other php module directory.
-*/
 #define COROUTINE_G(v) ZEND_MODULE_GLOBALS_ACCESSOR(coroutine, v)
 
 #if defined(ZTS) && defined(COMPILE_DL_COROUTINE)
