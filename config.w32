@@ -1,0 +1,13 @@
+// $Id$
+// vim:ft=javascript
+
+// If your extension references something external, use ARG_WITH
+// ARG_WITH("coroutine", "for coroutine support", "no");
+
+// Otherwise, use ARG_ENABLE
+// ARG_ENABLE("coroutine", "enable coroutine support", "no");
+
+if (PHP_COROUTINE != "no") {
+	EXTENSION("coroutine", "coroutine.c", PHP_EXTNAME_SHARED, "/DZEND_ENABLE_STATIC_TSRMLS_CACHE=1");
+}
+
