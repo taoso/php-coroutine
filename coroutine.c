@@ -73,6 +73,7 @@ static void php_coroutine_init_globals(zend_coroutine_globals *coroutine_globals
 PHP_MINIT_FUNCTION(coroutine)
 {
 	REGISTER_INI_ENTRIES();
+	zend_register_coroutine_ce();
 
 	return SUCCESS;
 }
@@ -100,22 +101,12 @@ PHP_MINFO_FUNCTION(coroutine)
 }
 /* }}} */
 
-/* {{{ coroutine_functions[]
- *
- * Every user visible function must have an entry in coroutine_functions[].
- */
-const zend_function_entry coroutine_functions[] = {
-	PHP_FE(confirm_coroutine_compiled,	NULL)		/* For testing, remove later. */
-	PHP_FE_END	/* Must be the last line in coroutine_functions[] */
-};
-/* }}} */
-
 /* {{{ coroutine_module_entry
  */
 zend_module_entry coroutine_module_entry = {
 	STANDARD_MODULE_HEADER,
 	"coroutine",
-	coroutine_functions,
+	NULL,
 	PHP_MINIT(coroutine),
 	PHP_MSHUTDOWN(coroutine),
 	NULL,
@@ -125,6 +116,25 @@ zend_module_entry coroutine_module_entry = {
 	STANDARD_MODULE_PROPERTIES
 };
 /* }}} */
+
+static const zend_function_entry coroutine_functions[] = {
+	ZEND_FE_END
+};
+
+static zend_object_handlers zend_coroutine_handlers;
+
+ZEND_API zend_class_entry *zend_ce_coroutine;
+
+void zend_register_coroutine_ce(void) /* {{{ */
+{
+	zend_class_entry ce;
+
+	INIT_CLASS_ENTRY(ce, "Coroutine", coroutine_functions);
+	zend_ce_coroutine = zend_register_internal_class(&ce);
+	zend_ce_coroutine->ce_flags |= ZEND_ACC_FINAL;
+
+	memcpy(&zend_coroutine_handlers, zend_get_std_object_handlers(), sizeof(zend_object_handlers));
+}
 
 #ifdef COMPILE_DL_COROUTINE
 #ifdef ZTS

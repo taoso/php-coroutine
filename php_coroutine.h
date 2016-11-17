@@ -49,6 +49,15 @@ ZEND_END_MODULE_GLOBALS(coroutine)
 ZEND_TSRMLS_CACHE_EXTERN()
 #endif
 
+extern ZEND_API zend_class_entry *zend_ce_coroutine;
+typedef struct _zend_coroutine zend_coroutine;
+
+struct _zend_coroutine {
+	zend_object std;
+};
+
+void zend_register_coroutine_ce(void);
+
 #endif	/* PHP_COROUTINE_H */
 
 
