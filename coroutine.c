@@ -125,6 +125,27 @@ static zend_object_handlers zend_coroutine_handlers;
 
 ZEND_API zend_class_entry *zend_ce_coroutine;
 
+static ZEND_COLD zend_function *zend_coroutine_get_constructor(zend_object *object) /* {{{ */
+{
+	zend_throw_error(NULL, "Instantiation of \\Coroutine is not allowed");
+	return NULL;
+}
+/* }}} */
+
+static zend_object *zend_coroutine_create(zend_class_entry *class_type) /* {{{ */
+{
+	zend_coroutine *coroutine;
+
+	coroutine = emalloc(sizeof(zend_coroutine));
+	memset(coroutine, 0, sizeof(zend_coroutine));
+
+	zend_object_std_init(&coroutine->std, class_type);
+	coroutine->std.handlers = &zend_coroutine_handlers;
+
+	return (zend_object*)coroutine;
+}
+/* }}} */
+
 void zend_register_coroutine_ce(void) /* {{{ */
 {
 	zend_class_entry ce;
@@ -132,8 +153,10 @@ void zend_register_coroutine_ce(void) /* {{{ */
 	INIT_CLASS_ENTRY(ce, "Coroutine", coroutine_functions);
 	zend_ce_coroutine = zend_register_internal_class(&ce);
 	zend_ce_coroutine->ce_flags |= ZEND_ACC_FINAL;
+	zend_ce_coroutine->create_object = zend_coroutine_create;
 
 	memcpy(&zend_coroutine_handlers, zend_get_std_object_handlers(), sizeof(zend_object_handlers));
+	zend_coroutine_handlers.get_constructor = zend_coroutine_get_constructor;
 }
 
 #ifdef COMPILE_DL_COROUTINE
