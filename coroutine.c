@@ -24,6 +24,8 @@
 
 #include "php.h"
 #include "php_ini.h"
+#include "zend_closures.h"
+#include "zend_exceptions.h"
 #include "ext/standard/info.h"
 #include "php_coroutine.h"
 
@@ -117,10 +119,6 @@ zend_module_entry coroutine_module_entry = {
 };
 /* }}} */
 
-static const zend_function_entry coroutine_functions[] = {
-	ZEND_FE_END
-};
-
 static zend_object_handlers zend_coroutine_handlers;
 
 ZEND_API zend_class_entry *zend_ce_coroutine;
@@ -145,6 +143,31 @@ static zend_object *zend_coroutine_create(zend_class_entry *class_type) /* {{{ *
 	return (zend_object*)coroutine;
 }
 /* }}} */
+
+/* {{{ proto Coroutine Coroutine::create(Closure closure)
+   Create a Coroutine from a closure. */
+ZEND_METHOD(Coroutine, create)
+{
+	zval *closure;
+	zend_object *coroutine;
+
+	zend_parse_parameters(ZEND_NUM_ARGS(), "o", &closure);
+
+	coroutine = zend_coroutine_create(zend_ce_coroutine);
+	object_init_ex(coroutine, zend_ce_coroutine);
+
+	RETURN_ZVAL((zval *)coroutine, 1, 0);
+}
+/* }}} */
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_coroutine_create, 0, 1, 1)
+	ZEND_ARG_OBJ_INFO(0, 'closure', Closure, 0)
+ZEND_END_ARG_INFO()
+
+static const zend_function_entry coroutine_functions[] = {
+	ZEND_ME(Coroutine, create, arginfo_coroutine_create, ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
+	ZEND_FE_END
+};
 
 void zend_register_coroutine_ce(void) /* {{{ */
 {
