@@ -53,8 +53,16 @@ extern ZEND_API zend_class_entry *zend_ce_coroutine;
 typedef struct _zend_coroutine zend_coroutine;
 
 struct _zend_coroutine {
+	int id;
+	zval *closure;
 	zend_object std;
 };
+
+static inline zend_coroutine *zend_coroutine_obj_from_obj(zend_object *obj) {
+	return (zend_coroutine*)((char*)(obj) - XtOffsetOf(zend_coroutine, std));
+}
+
+#define Z_COROUTINE_P(zv)  zend_coroutine_obj_from_obj(Z_OBJ_P((zv)))
 
 void zend_register_coroutine_ce(void);
 

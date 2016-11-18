@@ -134,13 +134,12 @@ static zend_object *zend_coroutine_create(zend_class_entry *class_type) /* {{{ *
 {
 	zend_coroutine *coroutine;
 
-	coroutine = emalloc(sizeof(zend_coroutine));
-	memset(coroutine, 0, sizeof(zend_coroutine));
+	coroutine = ecalloc(1, sizeof(zend_coroutine) + zend_object_properties_size(zend_ce_coroutine));
 
 	zend_object_std_init(&coroutine->std, class_type);
 	coroutine->std.handlers = &zend_coroutine_handlers;
 
-	return (zend_object*)coroutine;
+	return &coroutine->std;
 }
 /* }}} */
 
@@ -148,24 +147,62 @@ static zend_object *zend_coroutine_create(zend_class_entry *class_type) /* {{{ *
    Create a Coroutine from a closure. */
 ZEND_METHOD(Coroutine, create)
 {
-	zval *closure;
-	zend_object *coroutine;
+	zval *closure, zobj;
+	zend_coroutine *coroutine;
 
 	zend_parse_parameters(ZEND_NUM_ARGS(), "o", &closure);
 
-	coroutine = zend_coroutine_create(zend_ce_coroutine);
-	object_init_ex(coroutine, zend_ce_coroutine);
+	object_init_ex(return_value, zend_ce_coroutine);
+	coroutine = Z_COROUTINE_P(return_value);
 
-	RETURN_ZVAL((zval *)coroutine, 1, 0);
+	coroutine->id = 1314;
+	coroutine->closure = closure;
+	printf("init closure type is %d\n", Z_TYPE_P(closure));
 }
 /* }}} */
 
-ZEND_BEGIN_ARG_INFO_EX(arginfo_coroutine_create, 0, 1, 1)
-	ZEND_ARG_OBJ_INFO(0, 'closure', Closure, 0)
+/* {{{ proto Coroutine Coroutine::resume(vars...)
+   resume a Coroutine. */
+ZEND_METHOD(Coroutine, resume)
+{
+	zend_coroutine *coroutine;
+	zval *vars = ZEND_CALL_ARG(execute_data, 1);
+
+	coroutine = Z_COROUTINE_P(getThis());
+	zval *closure = coroutine->closure;
+
+	printf("closure type is %d\n", Z_TYPE_P(closure));
+
+	if (call_user_function_ex(NULL, NULL, closure, return_value, ZEND_NUM_ARGS(), vars, 1, NULL) == FAILURE) {
+		RETVAL_FALSE;
+	}
+}
+/* }}} */
+
+ZEND_METHOD(Coroutine, getId)
+{
+	zend_coroutine *coroutine;
+
+	coroutine = Z_COROUTINE_P(getThis());
+	zval *closure = coroutine->closure;
+	ZVAL_LONG(return_value, coroutine->id)
+}
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_coroutine_create, 0, 0, 1)
+	ZEND_ARG_OBJ_INFO(0, closure, Closure, 0)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_coroutine_resume, 0, 0, 0)
+	ZEND_ARG_VARIADIC_INFO(0, vars)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_coroutine_getId, 0, 0, 0)
 ZEND_END_ARG_INFO()
 
 static const zend_function_entry coroutine_functions[] = {
 	ZEND_ME(Coroutine, create, arginfo_coroutine_create, ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
+	ZEND_ME(Coroutine, resume, arginfo_coroutine_resume, ZEND_ACC_PUBLIC)
+	ZEND_ME(Coroutine, getId, arginfo_coroutine_getId, ZEND_ACC_PUBLIC)
 	ZEND_FE_END
 };
 
@@ -180,6 +217,7 @@ void zend_register_coroutine_ce(void) /* {{{ */
 
 	memcpy(&zend_coroutine_handlers, zend_get_std_object_handlers(), sizeof(zend_object_handlers));
 	zend_coroutine_handlers.get_constructor = zend_coroutine_get_constructor;
+	zend_coroutine_handlers.offset = XtOffsetOf(zend_coroutine, std);
 }
 
 #ifdef COMPILE_DL_COROUTINE
